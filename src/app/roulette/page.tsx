@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const numbers = [
     0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30,
@@ -7,8 +7,16 @@ const numbers = [
     28, 12, 35, 3, 26,
 ];
 
-const getColor = (n: number) =>
+const getColorName = (n: number): "red" | "black" | "green" =>
+    n === 0 ? "green" : n % 2 === 0 ? "black" : "red";
+
+const getColorHex = (n: number) =>
     n === 0 ? "#00b050" : n % 2 === 0 ? "#111" : "#d12b2b";
+
+type HistoryItem = {
+    number: number;
+    color: "red" | "black" | "green";
+};
 
 export default function RoulettePage() {
     const [bank, setBank] = useState(1000);
@@ -17,20 +25,48 @@ export default function RoulettePage() {
 
     const [spinning, setSpinning] = useState(false);
     const [rotation, setRotation] = useState(0);
-    const [result, setResult] = useState<number | null>(null);
+    const [ballAngle, setBallAngle] = useState(0);
+
     const [message, setMessage] = useState("");
+    const [history, setHistory] = useState<HistoryItem[]>([]);
+
+    // useEffect do animacji kulki
+    useEffect(() => {
+        if (!spinning) return;
+
+        const duration = 3300;
+        const start = performance.now();
+        const endAngle = rotation + 720 + Math.random() * 360;
+
+        const frame = (time: number) => {
+            const t = Math.min((time - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setBallAngle(endAngle * eased);
+
+            if (t < 1) requestAnimationFrame(frame);
+        };
+
+        requestAnimationFrame(frame);
+    }, [spinning, rotation]);
 
     const spin = () => {
-        if (!choice) return setMessage("❌ Wybierz na co grasz");
-        if (bet === "" || bet < 1 || bet > 1000) return setMessage("❌ Stawka 1–1000");
-        if (bank < bet) return setMessage("❌ Brak kasy");
+        if (!choice) {
+            setMessage("❌ Wybierz na co grasz");
+            return;
+        }
+        if (bet === "" || bet < 1 || bet > 1000) {
+            setMessage("❌ Stawka 1–1000");
+            return;
+        }
+        if (bank < bet) {
+            setMessage("❌ Brak kasy");
+            return;
+        }
 
         setBank((b) => b - bet);
-        setResult(null);
         setMessage("🎡 Kręcimy...");
         setSpinning(true);
 
-        // LOSOWANIE RUCHU KOŁA (TU, NIE W USEMEMO)
         const spins = 6 + Math.random() * 4;
         const angle = spins * 360 + Math.random() * 360;
         setRotation(angle);
@@ -39,10 +75,13 @@ export default function RoulettePage() {
 
         setTimeout(() => {
             setSpinning(false);
-            setResult(winNumber);
 
-            const color =
-                winNumber === 0 ? "green" : winNumber % 2 === 0 ? "black" : "red";
+            const color = getColorName(winNumber);
+
+            setHistory((h) => {
+                const arr = [{ number: winNumber, color }, ...h];
+                return arr.slice(0, 10);
+            });
 
             if (choice === "green" && winNumber === 0) {
                 setBank((b) => b + bet * 14);
@@ -56,6 +95,15 @@ export default function RoulettePage() {
         }, 3300);
     };
 
+    const ballPosition = (() => {
+        const radius = 210;
+        const rad = ((ballAngle % 360) * Math.PI) / 180;
+        return {
+            x: 250 + radius * Math.cos(rad),
+            y: 250 + radius * Math.sin(rad),
+        };
+    })();
+
     return (
         <main className="roulettePage">
             <div className="rouletteTop">
@@ -64,7 +112,7 @@ export default function RoulettePage() {
                 <div className="betBox">
                     <div className="betLabel">🎯 Stawka:</div>
                     <input
-                        className="betSlider"
+                        className="betInput"
                         type="number"
                         min={1}
                         max={1000}
@@ -105,15 +153,30 @@ export default function RoulettePage() {
                 </button>
 
                 <div className="msg">{message}</div>
+
+                <div className="history">
+                    <h4>Historia (ostatnie 10)</h4>
+                    <div className="historyList">
+                        {history.length === 0 ? (
+                            <div className="historyEmpty">Brak wyników</div>
+                        ) : (
+                            history.map((h, idx) => (
+                                <div key={idx} className={`historyItem ${h.color}`}>
+                                    {h.number}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
             </div>
 
             <div className="rouletteArea">
                 <div className="wheelWrap">
                     <svg
-                        className={`wheelSvg ${spinning ? "spin" : ""}`}
+                        className="wheelSvg"
                         viewBox="0 0 500 500"
                         style={{
-                            transform: spinning ? `rotate(${rotation}deg)` : "rotate(0deg)",
+                            transform: `rotate(${rotation}deg)`,
                             transition: spinning
                                 ? "transform 3.3s cubic-bezier(0.25, 0.1, 0.25, 1)"
                                 : "none",
@@ -126,15 +189,13 @@ export default function RoulettePage() {
                             </radialGradient>
                         </defs>
 
-                        {/* Obręcz */}
                         <circle cx="250" cy="250" r="240" fill="url(#rim)" />
 
-                        {/* Koło */}
                         <g>
                             {numbers.map((n, i) => {
                                 const start = (i * 360) / numbers.length;
                                 const end = ((i + 1) * 360) / numbers.length;
-                                const color = getColor(n);
+                                const hex = getColorHex(n);
 
                                 const x1 = 250 + 200 * Math.cos((start * Math.PI) / 180);
                                 const y1 = 250 + 200 * Math.sin((start * Math.PI) / 180);
@@ -156,7 +217,7 @@ export default function RoulettePage() {
 
                                 return (
                                     <g key={i}>
-                                        <path d={path} fill={color} stroke="#fff" strokeWidth="2" />
+                                        <path d={path} fill={hex} stroke="#fff" strokeWidth="2" />
                                         <text
                                             x={tx}
                                             y={ty}
@@ -165,7 +226,6 @@ export default function RoulettePage() {
                                             fontWeight="700"
                                             textAnchor="middle"
                                             dominantBaseline="middle"
-                                            transform={`rotate(${midAngle}, ${tx}, ${ty})`}
                                         >
                                             {n}
                                         </text>
@@ -173,15 +233,14 @@ export default function RoulettePage() {
                                 );
                             })}
                         </g>
-
-                        {/* Środek */}
-                        <circle cx="250" cy="250" r="55" fill="#d4b17c" />
-                        <circle cx="250" cy="250" r="35" fill="#7a5a2d" />
                     </svg>
 
-                    {/* wskaznik */}
                     <div className="pointer" />
-                    <div className={`ball ${spinning ? "ballSpin" : ""}`} />
+
+                    <div
+                        className="ball"
+                        style={{ left: `${ballPosition.x}px`, top: `${ballPosition.y}px` }}
+                    />
                 </div>
             </div>
         </main>

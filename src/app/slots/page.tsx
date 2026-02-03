@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-const symbols = ["🍒", "🍋", "🔔", "💎"];
+const symbols = ["7", "🍋", "🔔", "💎"];
 
 export default function SlotsPage() {
     const [money, setMoney] = useState(1000);
