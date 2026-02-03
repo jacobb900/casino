@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const numbers = [
     0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30,
@@ -12,22 +12,28 @@ const getColor = (n: number) =>
 
 export default function RoulettePage() {
     const [bank, setBank] = useState(1000);
-    const [bet, setBet] = useState(50);
+    const [bet, setBet] = useState<number | "">("");
     const [choice, setChoice] = useState<"red" | "black" | "green" | null>(null);
 
     const [spinning, setSpinning] = useState(false);
+    const [rotation, setRotation] = useState(0);
     const [result, setResult] = useState<number | null>(null);
     const [message, setMessage] = useState("");
 
     const spin = () => {
         if (!choice) return setMessage("❌ Wybierz na co grasz");
-        if (bet < 1 || bet > 1000) return setMessage("❌ Stawka 1–1000");
+        if (bet === "" || bet < 1 || bet > 1000) return setMessage("❌ Stawka 1–1000");
         if (bank < bet) return setMessage("❌ Brak kasy");
 
         setBank((b) => b - bet);
         setResult(null);
         setMessage("🎡 Kręcimy...");
         setSpinning(true);
+
+        // LOSOWANIE RUCHU KOŁA (TU, NIE W USEMEMO)
+        const spins = 6 + Math.random() * 4;
+        const angle = spins * 360 + Math.random() * 360;
+        setRotation(angle);
 
         const winNumber = numbers[Math.floor(Math.random() * numbers.length)];
 
@@ -50,26 +56,26 @@ export default function RoulettePage() {
         }, 3300);
     };
 
-    const rotation = useMemo(() => {
-        if (!spinning) return 0;
-        const spins = 6 + Math.random() * 4;
-        return spins * 360 + Math.random() * 360;
-    }, [spinning]);
-
     return (
         <main className="roulettePage">
             <div className="rouletteTop">
                 <div className="bank">💰 Bank: {bank} zł</div>
 
                 <div className="betBox">
-                    <div className="betLabel">🎯 Stawka: {bet} zł</div>
+                    <div className="betLabel">🎯 Stawka:</div>
                     <input
                         className="betSlider"
-                        type="range"
-                        min="1"
-                        max="1000"
+                        type="number"
+                        min={1}
+                        max={1000}
                         value={bet}
-                        onChange={(e) => setBet(Number(e.target.value))}
+                        placeholder="Wpisz stawkę"
+                        onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === "") return setBet("");
+                            if (!/^\d+$/.test(v)) return;
+                            setBet(Number(v));
+                        }}
                     />
                 </div>
 

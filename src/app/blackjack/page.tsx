@@ -1,8 +1,11 @@
 "use client";
 import { useMemo, useState } from "react";
 
+/* ===== TYPY ===== */
+type Card = { n: string; v: number };
+
 /* ===== KARTY ===== */
-const deck = [
+const deck: Card[] = [
     { n: "2", v: 2 }, { n: "3", v: 3 }, { n: "4", v: 4 }, { n: "5", v: 5 },
     { n: "6", v: 6 }, { n: "7", v: 7 }, { n: "8", v: 8 }, { n: "9", v: 9 },
     { n: "10", v: 10 }, { n: "J", v: 10 }, { n: "Q", v: 10 }, { n: "K", v: 10 },
@@ -20,7 +23,7 @@ const chips = [
 
 const draw = () => deck[Math.floor(Math.random() * deck.length)];
 
-const count = (hand: any[]) => {
+const count = (hand: Card[]) => {
     let sum = hand.reduce((a, c) => a + c.v, 0);
     let aces = hand.filter(c => c.n === "A").length;
     while (sum > 21 && aces--) sum -= 10;
@@ -30,8 +33,8 @@ const count = (hand: any[]) => {
 export default function BlackjackPage() {
     const [bank, setBank] = useState(1000);
     const [bet, setBet] = useState(0);
-    const [player, setPlayer] = useState<any[]>([]);
-    const [dealer, setDealer] = useState<any[]>([]);
+    const [player, setPlayer] = useState<Card[]>([]);
+    const [dealer, setDealer] = useState<Card[]>([]);
     const [playing, setPlaying] = useState(false);
     const [msg, setMsg] = useState("");
 
@@ -61,7 +64,7 @@ export default function BlackjackPage() {
     };
 
     const stand = () => {
-        let d = [...dealer];
+        const d = [...dealer];
         while (count(d) < 17) d.push(draw());
         setDealer(d);
 
@@ -101,7 +104,6 @@ export default function BlackjackPage() {
                         onChange={(e) => {
                             const v = Number(e.target.value);
                             if (!playing && v >= 0 && v <= bank + bet) {
-                                // zwróć kasę jeśli zmniejsza stawkę
                                 const diff = v - bet;
                                 setBet(v);
                                 setBank(b => b - diff);
