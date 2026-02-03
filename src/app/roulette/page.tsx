@@ -8,7 +8,7 @@ const numbers = [
 ];
 
 const getColor = (n: number) =>
-    n === 0 ? "green" : n % 2 === 0 ? "black" : "red";
+    n === 0 ? "#00b050" : n % 2 === 0 ? "#111" : "#d12b2b";
 
 export default function RoulettePage() {
     const [bank, setBank] = useState(1000);
@@ -35,7 +35,8 @@ export default function RoulettePage() {
             setSpinning(false);
             setResult(winNumber);
 
-            const color = getColor(winNumber);
+            const color =
+                winNumber === 0 ? "green" : winNumber % 2 === 0 ? "black" : "red";
 
             if (choice === "green" && winNumber === 0) {
                 setBank((b) => b + bet * 14);
@@ -46,13 +47,13 @@ export default function RoulettePage() {
             } else {
                 setMessage(`😢 Przegrałeś — ${winNumber} (${color})`);
             }
-        }, 3000);
+        }, 3300);
     };
 
     const rotation = useMemo(() => {
         if (!spinning) return 0;
-        const spins = 5 + Math.random() * 3; // 5-8 obrotów
-        return spins * 360;
+        const spins = 6 + Math.random() * 4;
+        return spins * 360 + Math.random() * 360;
     }, [spinning]);
 
     return (
@@ -102,36 +103,79 @@ export default function RoulettePage() {
 
             <div className="rouletteArea">
                 <div className="wheelWrap">
-                    <div
-                        className="wheel"
+                    <svg
+                        className={`wheelSvg ${spinning ? "spin" : ""}`}
+                        viewBox="0 0 500 500"
                         style={{
-                            transform: spinning ? `rotate(${rotation}deg)` : `rotate(0deg)`,
+                            transform: spinning ? `rotate(${rotation}deg)` : "rotate(0deg)",
                             transition: spinning
-                                ? "transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)"
+                                ? "transform 3.3s cubic-bezier(0.25, 0.1, 0.25, 1)"
                                 : "none",
                         }}
                     >
-                        {numbers.map((n, i) => (
-                            <div
-                                key={i}
-                                className={`wheelNum ${getColor(n)}`}
-                                style={{
-                                    transform: `rotate(${i * (360 / numbers.length)}deg)`,
-                                }}
-                            >
-                <span
-                    style={{
-                        transform: `rotate(${-i * (360 / numbers.length)}deg)`,
-                    }}
-                >
-                  {n}
-                </span>
-                            </div>
-                        ))}
-                    </div>
+                        <defs>
+                            <radialGradient id="rim" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stopColor="#cfa46e" />
+                                <stop offset="100%" stopColor="#8b5a2f" />
+                            </radialGradient>
+                        </defs>
 
+                        {/* Obręcz */}
+                        <circle cx="250" cy="250" r="240" fill="url(#rim)" />
+
+                        {/* Koło */}
+                        <g>
+                            {numbers.map((n, i) => {
+                                const start = (i * 360) / numbers.length;
+                                const end = ((i + 1) * 360) / numbers.length;
+                                const color = getColor(n);
+
+                                const x1 = 250 + 200 * Math.cos((start * Math.PI) / 180);
+                                const y1 = 250 + 200 * Math.sin((start * Math.PI) / 180);
+                                const x2 = 250 + 200 * Math.cos((end * Math.PI) / 180);
+                                const y2 = 250 + 200 * Math.sin((end * Math.PI) / 180);
+
+                                const largeArc = end - start > 180 ? 1 : 0;
+
+                                const path = `
+                  M 250 250
+                  L ${x1} ${y1}
+                  A 200 200 0 ${largeArc} 1 ${x2} ${y2}
+                  Z
+                `;
+
+                                const midAngle = (start + end) / 2;
+                                const tx = 250 + 150 * Math.cos((midAngle * Math.PI) / 180);
+                                const ty = 250 + 150 * Math.sin((midAngle * Math.PI) / 180);
+
+                                return (
+                                    <g key={i}>
+                                        <path d={path} fill={color} stroke="#fff" strokeWidth="2" />
+                                        <text
+                                            x={tx}
+                                            y={ty}
+                                            fill="#fff"
+                                            fontSize="18"
+                                            fontWeight="700"
+                                            textAnchor="middle"
+                                            dominantBaseline="middle"
+                                            transform={`rotate(${midAngle}, ${tx}, ${ty})`}
+                                        >
+                                            {n}
+                                        </text>
+                                    </g>
+                                );
+                            })}
+                        </g>
+
+                        {/* Środek */}
+                        <circle cx="250" cy="250" r="55" fill="#d4b17c" />
+                        <circle cx="250" cy="250" r="35" fill="#7a5a2d" />
+                    </svg>
+
+                    {/* wskaznik */}
+                    <div className="pointer" />
                     <div className={`ball ${spinning ? "ballSpin" : ""}`} />
-                    <div className="wheelCenter" />
                 </div>
             </div>
         </main>

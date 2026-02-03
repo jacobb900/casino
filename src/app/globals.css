@@ -96,7 +96,11 @@ button:hover {
     color: white;
     cursor: pointer;
 }
-/* ---------- RULETKA ---------- */
+/* ---------------- RULETKA (nadpisuje wszystkie inne style) ---------------- */
+.roulettePage * {
+    box-sizing: border-box;
+}
+
 .roulettePage {
     min-height: 100vh;
     background: radial-gradient(circle at center, #1f7a3a, #0b3d1e);
@@ -154,15 +158,9 @@ button:hover {
     opacity: 1;
 }
 
-.choice.red {
-    background: #c0392b;
-}
-.choice.black {
-    background: #111;
-}
-.choice.green {
-    background: #27ae60;
-}
+.choice.red { background: #c0392b; }
+.choice.black { background: #111; }
+.choice.green { background: #27ae60; }
 
 .spinBtn {
     padding: 12px 35px;
@@ -189,69 +187,332 @@ button:hover {
 
 .wheelWrap {
     position: relative;
-    width: 450px;
-    height: 450px;
+    width: 520px;
+    height: 520px;
 }
 
-.wheel {
+.wheelSvg {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
-    border: 18px solid #c59b6f;
-    background: #3a2a1a;
-    position: relative;
-    overflow: hidden;
+    transform-origin: 50% 50%;
 }
 
-.wheelNum {
+.pointer {
     position: absolute;
-    width: 50%;
-    height: 50%;
-    top: 0;
+    width: 0;
+    height: 0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-bottom: 26px solid #fff;
+    top: -14px;
     left: 50%;
-    transform-origin: 0% 100%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
-    padding: 10px;
-    font-weight: bold;
-    color: #fff;
-    font-size: 14px;
-}
-
-.wheelNum.red { background: #c0392b; }
-.wheelNum.black { background: #111; }
-.wheelNum.green { background: #27ae60; }
-
-.wheelCenter {
-    position: absolute;
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: radial-gradient(circle at center, #f4e6c2, #a67b3a);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 3;
+    transform: translateX(-50%);
+    z-index: 5;
+    filter: drop-shadow(0 0 6px rgba(0,0,0,0.7));
 }
 
 .ball {
     position: absolute;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: #fff;
-    top: 16px;
+    top: 30px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 4;
 }
 
 .ballSpin {
-    animation: ballAnim 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    animation: ballAnim 3.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 @keyframes ballAnim {
     0% { transform: translateX(-50%) translateY(0) rotate(0deg); }
     100% { transform: translateX(-50%) translateY(0) rotate(1080deg); }
+}
+/* --- RESPONSYWNOŚĆ RULETKI --- */
+@media (max-width: 900px) {
+    .rouletteArea {
+        margin-top: 30px;
+    }
+    .wheelWrap {
+        width: 380px;
+        height: 380px;
+    }
+    .betSlider {
+        width: 260px;
+    }
+}
+
+@media (max-width: 600px) {
+    .roulettePage {
+        padding: 20px;
+    }
+    .wheelWrap {
+        width: 320px;
+        height: 320px;
+    }
+    .bank {
+        font-size: 20px;
+    }
+    .betSlider {
+        width: 240px;
+    }
+    .choices {
+        flex-direction: column;
+    }
+}
+/* ---------- BLACKJACK ---------- */
+.blackjackPage {
+    min-height: 100vh;
+    padding: 40px;
+    background: radial-gradient(circle at center, #1f4f2a, #0a2b15);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.blackjackTop {
+    width: 100%;
+    max-width: 1100px;
+    text-align: center;
+}
+
+.bank {
+    font-size: 24px;
+    margin-bottom: 12px;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.35);
+    border-radius: 12px;
+}
+
+.betRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 10px 0 20px;
+}
+
+.betLabel {
+    font-size: 18px;
+}
+
+.betInput {
+    width: 140px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #fff;
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+    font-size: 18px;
+    text-align: center;
+}
+
+.chips {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.chip {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 800;
+    color: #111;
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    border: 3px solid #fff;
+    transition: transform 0.2s ease;
+}
+
+.chip:hover {
+    transform: translateY(-4px);
+}
+
+.table {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.hand {
+    flex: 1;
+    min-width: 280px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.card {
+    width: 60px;
+    height: 90px;
+    border-radius: 10px;
+    background: #fff;
+    color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    font-weight: 800;
+    box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+}
+
+.sum {
+    margin-top: 10px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.controls {
+    margin-top: 25px;
+}
+
+.btn {
+    padding: 12px 30px;
+    margin: 0 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    color: #fff;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.35);
+}
+
+.dealBtn {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+}
+
+.msg {
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* RESPONSYWNOŚĆ */
+@media (max-width: 900px) {
+    .betInput { width: 120px; }
+    .card { width: 55px; height: 85px; font-size: 26px; }
+}
+
+@media (max-width: 600px) {
+    .blackjackPage { padding: 20px; }
+    .table { flex-direction: column; align-items: center; }
+    .betRow { flex-direction: column; }
+    .betInput { width: 100px; }
+}
+.betInput {
+    width: 140px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #fff;
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+    font-size: 18px;
+    text-align: center;
+}
+/* ---------- AUTOMATY (SLOTS) ---------- */
+.slotsPage {
+    min-height: 100vh;
+    padding: 60px 20px;
+    text-align: center;
+    background: radial-gradient(circle at center, #1f4f2a, #0a2b15);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.slotsPage h2 {
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+.money {
+    font-size: 24px;
+    margin-bottom: 25px;
+}
+
+.slotsScreen {
+    font-size: 80px;
+    background: #111;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px gold;
+    margin: 30px auto;
+    width: fit-content;
+}
+
+.slotsBet {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.betLabel {
+    font-size: 20px;
+}
+
+.betInput {
+    width: 180px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #fff;
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+    font-size: 18px;
+    text-align: center;
+}
+
+.spinBtn {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    color: #fff;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.35);
+}
+
+.slotsMsg {
+    margin-top: 20px;
+    font-size: 20px;
+}
+
+/* RESPONSYWNOŚĆ */
+@media (max-width: 600px) {
+    .slotsScreen {
+        font-size: 60px;
+        padding: 20px;
+    }
+    .betInput {
+        width: 140px;
+    }
 }

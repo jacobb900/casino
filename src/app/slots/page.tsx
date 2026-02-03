@@ -5,12 +5,12 @@ const symbols = ["🍒", "🍋", "🔔", "💎"];
 
 export default function SlotsPage() {
     const [money, setMoney] = useState(1000);
-    const [bet, setBet] = useState(10);
+    const [bet, setBet] = useState<number | "">("");
     const [result, setResult] = useState(["❓", "❓", "❓"]);
     const [msg, setMsg] = useState("");
 
     const spin = () => {
-        if (bet < 1 || bet > 1000) {
+        if (bet === "" || bet < 1 || bet > 1000) {
             setMsg("❌ Stawka 1–1000");
             return;
         }
@@ -39,43 +39,38 @@ export default function SlotsPage() {
     };
 
     return (
-        <main style={{ padding: 60, textAlign: "center" }}>
-            <h2 style={{ fontSize: 40 }}>🎰 AUTOMATY</h2>
+        <main className="slotsPage">
+            <h2>🎰 AUTOMATY</h2>
 
-            <p style={{ fontSize: 24 }}>💰 Saldo: {money} zł</p>
+            <p className="money">💰 Saldo: {money} zł</p>
 
-            <div
-                style={{
-                    fontSize: 80,
-                    background: "#111",
-                    padding: 30,
-                    borderRadius: 20,
-                    boxShadow: "0 0 30px gold",
-                    margin: "30px auto",
-                    width: "fit-content",
-                }}
-            >
+            <div className="slotsScreen">
                 {result.join(" ")}
             </div>
 
-            <div style={{ marginTop: 30 }}>
-                <p>🎯 Stawka: {bet} zł</p>
-
+            <div className="slotsBet">
+                <p className="betLabel">🎯 Stawka:</p>
                 <input
-                    type="range"
-                    min="1"
-                    max="1000"
+                    className="betInput"
+                    type="number"
+                    min={1}
+                    max={1000}
                     value={bet}
-                    onChange={e => setBet(Number(e.target.value))}
-                    style={{ width: 300 }}
+                    placeholder="Wpisz stawkę"
+                    onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "") return setBet("");
+                        const num = Number(v);
+                        if (num >= 1 && num <= 1000) setBet(num);
+                    }}
                 />
             </div>
 
-            <button onClick={spin} style={{ marginTop: 30 }}>
+            <button className="spinBtn" onClick={spin}>
                 SPIN 🎲
             </button>
 
-            <p style={{ marginTop: 20, fontSize: 20 }}>{msg}</p>
+            <p className="slotsMsg">{msg}</p>
         </main>
     );
 }
